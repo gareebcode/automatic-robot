@@ -1,4 +1,4 @@
-# main.py
+# main.py - Polling Version (More Reliable for Heroku)
 import os
 import logging
 import asyncio
@@ -252,12 +252,12 @@ async def health_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 💚 <b>Bot Health Check</b>
 
 ✅ Database: Connected
-✅ Bot: Running
+✅ Bot: Running (Polling Mode)
 👥 Total Users: {user_count}
 🌐 Environment: Heroku
-⏰ Uptime: Active
+⏰ Status: All systems operational
 
-<i>All systems operational!</i>
+<i>Bot is healthy and running smoothly!</i>
 """
         
         await update.message.reply_text(health_text, parse_mode='HTML')
@@ -400,7 +400,7 @@ async def stats_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 🚫 Inactive Users: {inactive_users}
 📢 Total Broadcasts: {total_broadcasts}
 📱 Total Users: {active_users + inactive_users}
-🌐 Environment: Heroku{latest_info}
+🌐 Environment: Heroku (Polling){latest_info}
 
 <i>Last updated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</i>
 """
@@ -418,6 +418,16 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         first_name=user.first_name,
         last_name=user.last_name
     )
+
+async def keep_alive():
+    """Keep the bot alive on Heroku"""
+    while True:
+        try:
+            logger.info("Bot is alive and running...")
+            await asyncio.sleep(300)  # Log every 5 minutes
+        except Exception as e:
+            logger.error(f"Keep alive error: {e}")
+            await asyncio.sleep(60)
 
 def main():
     """Main function to run the bot"""
@@ -457,21 +467,19 @@ def main():
     application.add_handler(CommandHandler("stats", stats_command))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
     
-    # Start the bot
-    logger.info(f"Bot starting on port {PORT}")
+    # Start the bot with polling (more reliable for Heroku)
+    logger.info(f"Bot starting with polling mode on port {PORT}")
     
-    # For Heroku deployment, use webhook instead of polling
-    if os.getenv('HEROKU_APP_NAME'):
-        # Webhook mode for Heroku
-        application.run_webhook(
-            listen="0.0.0.0",
-            port=PORT,
-            url_path=BOT_TOKEN,
-            webhook_url=f"https://{os.getenv('HEROKU_APP_NAME')}.herokuapp.com/{BOT_TOKEN}"
-        )
-    else:
-        # Polling mode for local development
-        application.run_polling()
+    # Use polling mode which is more reliable on Heroku
+    application.run_polling(
+        drop_pending_updates=True,
+        timeout=30,
+        bootstrap_retries=3,
+        read_timeout=30,
+        write_timeout=30,
+        connect_timeout=30,
+        pool_timeout=30
+    )
 
 if __name__ == "__main__":
     main()
