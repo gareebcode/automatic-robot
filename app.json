@@ -1,0 +1,33 @@
+{
+  "name": "Telegram Broadcast Bot",
+  "description": "A Telegram bot for broadcasting messages to users with auto-pin functionality",
+  "repository": "https://github.com/yourusername/telegram-broadcast-bot",
+  "logo": "https://telegram.org/img/t_logo.png",
+  "keywords": ["telegram", "bot", "broadcast", "python", "heroku"],
+  "stack": "heroku-22",
+  "env": {
+    "BOT_TOKEN": {
+      "description": "Your Telegram Bot Token from @BotFather",
+      "required": true
+    },
+    "ADMIN_USER_IDS": {
+      "description": "Comma-separated list of admin user IDs (e.g., 123456789,987654321)",
+      "required": true
+    },
+    "HEROKU_APP_NAME": {
+      "description": "Your Heroku app name (will be auto-filled)",
+      "required": false
+    }
+  },
+  "formation": {
+    "web": {
+      "quantity": 1,
+      "size": "eco"
+    }
+  },
+  "buildpacks": [
+    {
+      "url": "heroku/python"
+    }
+  ]
+}
